@@ -1,26 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './Componen/Login';
+import Dashboard from './Componen/Dashboard';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+interface AppState {
+  isAuthenticated: boolean;
 }
 
-export default App;
+export default class App extends Component<{}, AppState> {
+  state: AppState = {
+    isAuthenticated: localStorage.getItem('isAuthenticated') === 'true', 
+  };
+
+  handleLoginSuccess = () => {
+    this.setState({ isAuthenticated: true });
+    localStorage.setItem('isAuthenticated', 'true'); 
+  };
+
+  handleLogout = () => {
+    this.setState({ isAuthenticated: false });
+    localStorage.removeItem('isAuthenticated');
+  };
+
+  render() {
+    const { isAuthenticated } = this.state;
+
+    return (
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLoginSuccess={this.handleLoginSuccess} />}
+          />
+          <Route
+            path="/dashboard"
+            element={isAuthenticated ? <Dashboard onLogout={this.handleLogout} /> : <Navigate to="/" />}
+          />
+        </Routes>
+      </Router>
+    );
+  }
+}
